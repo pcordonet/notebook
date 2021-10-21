@@ -1,0 +1,8 @@
+{
+  "name": "Notebook",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react",
+  "id": "ac360467"
+}
