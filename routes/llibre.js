@@ -23,12 +23,12 @@ function runExec(db, sql, params = []) {
 router.get('/', async (req, res) => {
     const db = await getDatabase();
 
-    // Obtenir assignatures actives amb informació de l'aula
+    // Obtenir assignatures actives (no tutories) amb informació de l'aula
     const assignatures = runQuery(db, `
         SELECT a.*, au.codi_aula, au.any_curs
         FROM assignatures a
         JOIN aules au ON a.aula_id = au.id
-        WHERE a.actiu = 1
+        WHERE a.actiu = 1 AND a.es_tutoria = 0
         ORDER BY au.any_curs DESC, au.codi_aula, a.nom
     `);
 

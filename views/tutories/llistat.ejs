@@ -1,0 +1,36 @@
+<%- include('../header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-person-hearts"></i> Tutories</h1>
+</div>
+
+<div class="row">
+    <% grups.forEach(grup => { %>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-person-hearts"></i> <%= grup.nom %></h5>
+                <p class="card-text">
+                    <strong>Aula:</strong> <%= grup.codi_aula %><% if (grup.nom_aula) { %> - <%= grup.nom_aula %><% } %> (<%= grup.any_curs %>)<br>
+                    <strong>Alumnes:</strong> <%= grup.num_alumnes %>
+                    <% if (grup.seguiments_actius > 0) { %>
+                    &nbsp;·&nbsp;<span class="badge bg-warning text-dark"><%= grup.seguiments_actius %> seguiment(s) actiu(s)</span>
+                    <% } %>
+                </p>
+                <a href="/assignatures/<%= grup.id %>/tutoria" class="btn btn-primary">
+                    <i class="bi bi-people"></i> Veure el Meu Grup
+                </a>
+            </div>
+        </div>
+    </div>
+    <% }) %>
+</div>
+
+<% if (grups.length === 0) { %>
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> Encara no hi ha cap assignatura marcada com a Tutoria.
+    Pots marcar-ne una des del formulari d'edició d'una assignatura.
+</div>
+<% } %>
+
+<%- include('../footer') %>

@@ -17,6 +17,25 @@ function runExec(db, sql, params = []) {
     db.run(sql, params);
 }
 
+// Llistat dels grups de tutoria (assignatures marcades com a Tutoria)
+router.get('/', async (req, res) => {
+    const db = await getDatabase();
+
+    const grups = runQuery(db, `
+        SELECT a.*, au.codi_aula, au.any_curs, au.nom_aula,
+               (SELECT COUNT(*) FROM alumne_assignatura aa WHERE aa.assignatura_id = a.id AND aa.actiu = 1) AS num_alumnes,
+               (SELECT COUNT(*) FROM seguiments s
+                    JOIN alumne_assignatura aa2 ON aa2.alumne_id = s.alumne_id AND aa2.actiu = 1
+                    WHERE aa2.assignatura_id = a.id AND s.estat != 'tancat') AS seguiments_actius
+        FROM assignatures a
+        JOIN aules au ON a.aula_id = au.id
+        WHERE a.es_tutoria = 1 AND a.actiu = 1
+        ORDER BY au.any_curs DESC, au.codi_aula, a.nom
+    `);
+
+    res.render('tutories/llistat', { title: 'Tutories', grups });
+});
+
 // Formulari nova tutoria individual
 router.get('/crear', async (req, res) => {
     const db = await getDatabase();
