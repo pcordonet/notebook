@@ -1,0 +1,74 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-book-half"></i> Llibre - <%= alumne.nom %> <%= alumne.cognoms %>
+        </h1>
+
+        <% dadesAssignatures.forEach(dada => { %>
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-journal-bookmark"></i> <%= dada.assignatura.nom %>
+                    <small class="text-muted">(<%= dada.assignatura.codi_aula %> - <%= dada.assignatura.any_curs %>)</small>
+                </h5>
+                <div>
+                    <% if (dada.mitjana_trimestre !== null) { %>
+                    <span class="badge bg-success">Mitjana Trimestre: <%= dada.mitjana_trimestre.toFixed(2) %></span>
+                    <% } %>
+                    <% if (dada.mitjana_global !== null) { %>
+                    <span class="badge bg-warning">Mitjana Global: <%= dada.mitjana_global.toFixed(2) %></span>
+                    <% } %>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tipus de Nota</th>
+                                <th>Trimestre</th>
+                                <th>Pes Trimestre</th>
+                                <th>Pes Global</th>
+                                <th>Nota</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% dada.notes.forEach(nota => { %>
+                            <tr>
+                                <td><%= nota.tipus.nom %></td>
+                                <td><%= nota.tipus.trimestre ? nota.tipus.trimestre + 'r Trim' : 'Global' %></td>
+                                <td><%= nota.tipus.pes_trimestre %></td>
+                                <td><%= nota.tipus.pes_global %></td>
+                                <td>
+                                    <% if (nota.nota !== null) { %>
+                                    <span class="badge bg-primary fs-6"><%= nota.nota.toFixed(2) %></span>
+                                    <% } else { %>
+                                    <span class="text-muted">-</span>
+                                    <% } %>
+                                </td>
+                                <td><%= nota.data || '-' %></td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+
+        <% if (dadesAssignatures.length === 0) { %>
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> L'alumne no està inscrit a cap assignatura.
+        </div>
+        <% } %>
+
+        <a href="/llibre" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Tornar al Llibre
+        </a>
+    </div>
+</div>
+
+<%- include('../footer') %>

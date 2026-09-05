@@ -1,0 +1,19 @@
+node_modules/
+
+# Base de dades (dades reals d'alumnes; es recrea amb `npm run init-db`)
+db/notbook.db
+db/notbook.db.bak-*
+
+# Documents pujats pels usuaris
+uploads/*
+!uploads/.gitkeep
+!uploads/documents/
+uploads/documents/*
+!uploads/documents/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# Entorn
+.env

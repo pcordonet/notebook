@@ -1,0 +1,15 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-12 text-center">
+        <h1 class="display-1 text-danger">500</h1>
+        <h2>Error del servidor</h2>
+        <p class="text-muted">Hi ha hagut un error intern.</p>
+        <% if (typeof error !== 'undefined' && error) { %>
+        <pre class="text-start bg-light p-3 rounded"><%= error.message %></pre>
+        <% } %>
+        <a href="/" class="btn btn-primary">Tornar al Dashboard</a>
+    </div>
+</div>
+
+<%- include('../footer') %>

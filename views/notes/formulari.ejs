@@ -1,0 +1,112 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            <i class="bi bi-pencil-square"></i>
+            <%= nota && nota.id ? 'Modificar Nota' : 'Afegir Nota' %>
+        </h1>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> <%= error %>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-body">
+                <form action="<%= nota && nota.id ? '/notes/' + nota.id + '/editar' : '/notes/crear' %>" method="POST">
+                    <div class="mb-3">
+                        <label for="alumne_id" class="form-label">Alumne *</label>
+                        <select class="form-select" id="alumne_id" name="alumne_id" required>
+                            <option value="">Seleccionar alumne...</option>
+                            <% alumnes.forEach(alumne => { %>
+                            <option value="<%= alumne.id %>" <%= (nota && nota.alumne_id == alumne.id) ? 'selected' : '' %>>
+                                <%= alumne.cognoms %>, <%= alumne.nom %>
+                            </option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="assignatura_id" class="form-label">Assignatura *</label>
+                        <select class="form-select" id="assignatura_id" name="assignatura_id" required>
+                            <option value="">Seleccionar assignatura...</option>
+                            <% assignatures.forEach(assignatura => { %>
+                            <option value="<%= assignatura.id %>"><%= assignatura.nom %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tipus_nota_id" class="form-label">Tipus de Nota *</label>
+                        <select class="form-select" id="tipus_nota_id" name="tipus_nota_id" required>
+                            <option value="">Primer selecciona una assignatura...</option>
+                        </select>
+                        <div class="form-text">Selecciona l'assignatura primer per veure els tipus disponibles</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nota" class="form-label">Nota (0-10) *</label>
+                                <input type="number" class="form-control" id="nota" name="nota"
+                                       value="<%= nota ? nota.nota : '' %>" min="0" max="10" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data" class="form-label">Data</label>
+                                <input type="date" class="form-control" id="data" name="data"
+                                       value="<%= nota && nota.data ? nota.data : new Date().toISOString().split('T')[0] %>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacions" class="form-label">Observacions</label>
+                        <textarea class="form-control" id="observacions" name="observacions" rows="3"><%= nota ? nota.observacions : '' %></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar
+                        </button>
+                        <a href="/notes" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel·lar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('assignatura_id').addEventListener('change', function() {
+    const assignaturaId = this.value;
+    const tipusSelect = document.getElementById('tipus_nota_id');
+
+    tipusSelect.innerHTML = '<option value="">Carregant...</option>';
+
+    if (!assignaturaId) {
+        tipusSelect.innerHTML = '<option value="">Primer selecciona una assignatura...</option>';
+        return;
+    }
+
+    fetch('/notes/tipus_nota/' + assignaturaId)
+        .then(response => response.json())
+        .then(data => {
+            tipusSelect.innerHTML = '<option value="">Seleccionar tipus de nota...</option>';
+            data.forEach(tn => {
+                const trimestre = tn.trimestre ? ' (Trimestre ' + tn.trimestre + ')' : ' (Tot el curs)';
+                tipusSelect.innerHTML += '<option value="' + tn.id + '">' + tn.nom + trimestre + '</option>';
+            });
+        })
+        .catch(error => {
+            tipusSelect.innerHTML = '<option value="">Error carregant tipus...</option>';
+        });
+});
+</script>
+
+<%- include('../footer') %>

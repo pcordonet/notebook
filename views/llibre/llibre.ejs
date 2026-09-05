@@ -1,0 +1,59 @@
+<%- include('../header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-book-half"></i> Llibre d'avaluació</h1>
+</div>
+
+<div class="row">
+    <% assignatures.forEach(assignatura => { %>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-journal-bookmark"></i> <%= assignatura.nom %></h5>
+                <p class="card-text">
+                    <strong>Aula:</strong> <%= assignatura.codi_aula %> - <%= assignatura.any_curs %><br>
+                    <strong>Descripció:</strong> <%= assignatura.descripcio || '-' %>
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="/assignatures/<%= assignatura.id %>/avaluacio" class="btn btn-primary">
+                        <i class="bi bi-eye"></i> Veure Llibre
+                    </a>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="toggleActiu(<%= assignatura.id %>)">
+                        <i class="bi bi-toggle2-on"></i> Desactivar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% }) %>
+</div>
+
+<% if (assignatures.length === 0) { %>
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> No hi ha assignatures actives per mostrar.
+</div>
+<% } %>
+
+<script>
+function toggleActiu(assignaturaId) {
+    fetch(`/llibre/api/toggle-actiu/${assignaturaId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error de connexió: ' + error);
+    });
+}
+</script>
+
+<%- include('../footer') %>

@@ -1,0 +1,72 @@
+<%- include('../header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-file-earmark"></i> Documents</h1>
+    <a href="/documents/pujar" class="btn btn-primary">
+        <i class="bi bi-upload"></i> Pujar Document
+    </a>
+</div>
+
+<% if (documents.length > 0) { %>
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Nom Fitxer</th>
+                <th>Descripció</th>
+                <th>Vinculat a</th>
+                <th>Tipus</th>
+                <th>Mida</th>
+                <th>Data</th>
+                <th>Accions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% documents.forEach(doc => { %>
+            <tr>
+                <td><%= doc.nom_fitxer %></td>
+                <td><%= doc.descripcio || '-' %></td>
+                <td>
+                    <% if (doc.alumne_id) { %>
+                    <span class="badge bg-info">Alumne: <%= doc.alumne_cognoms %>, <%= doc.alumne_nom %></span>
+                    <% } %>
+                    <% if (doc.assignatura_id) { %>
+                    <span class="badge bg-success">Assignatura: <%= doc.assignatura_nom %></span>
+                    <% } %>
+                    <% if (doc.nota_id) { %>
+                    <span class="badge bg-warning">Nota: <%= doc.nota_valor ? doc.nota_valor.toFixed(2) : '' %></span>
+                    <% } %>
+                    <% if (!doc.alumne_id && !doc.assignatura_id && !doc.nota_id) { %>
+                    <span class="badge bg-secondary">General</span>
+                    <% } %>
+                </td>
+                <td><%= doc.tipus_mime.split('/').pop().toUpperCase() %></td>
+                <td><%= (doc.mida_bytes / 1024).toFixed(1) %> KB</td>
+                <td><%= doc.data_pujada %></td>
+                <td>
+                    <a href="/documents/<%= doc.id %>" class="btn btn-sm btn-outline-primary" title="Descarregar">
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <% if (doc.tipus_mime.startsWith('image/') || doc.tipus_mime === 'application/pdf') { %>
+                    <a href="/documents/<%= doc.id %>/veure" class="btn btn-sm btn-outline-info" title="Veure" target="_blank">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <% } %>
+                    <form action="/documents/<%= doc.id %>/eliminar" method="POST" class="d-inline" onsubmit="return confirm('Estàs segur d\'eliminar aquest document?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>
+<% } else { %>
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> No hi ha documents pujats.
+</div>
+<% } %>
+
+<%- include('../footer') %>

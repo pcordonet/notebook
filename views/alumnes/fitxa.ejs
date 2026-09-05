@@ -1,0 +1,164 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-person"></i> <%= alumne.nom %> <%= alumne.cognoms %>
+        </h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Dades Personals</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Nom</dt>
+                            <dd class="col-sm-8"><%= alumne.nom %></dd>
+
+                            <dt class="col-sm-4">Cognoms</dt>
+                            <dd class="col-sm-8"><%= alumne.cognoms %></dd>
+
+                            <dt class="col-sm-4">Data Naixement</dt>
+                            <dd class="col-sm-8"><%= alumne.data_naixement || '-' %></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Assignatures</h5>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#inscriureModal">
+                            <i class="bi bi-plus-circle"></i> Inscriure
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <% if (assignatures.length > 0) { %>
+                        <ul class="list-group">
+                            <% assignatures.forEach(assignatura => { %>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <a href="/assignatures/<%= assignatura.id %>"><%= assignatura.nom %></a>
+                                    <br>
+                                    <small class="text-muted">Inscrit: <%= assignatura.data_inscripcio %></small>
+                                </div>
+                                <% if (assignatura.actiu) { %>
+                                <span class="badge bg-success">Actiu</span>
+                                <% } else { %>
+                                <span class="badge bg-secondary">Baixa</span>
+                                <% } %>
+                            </li>
+                            <% }) %>
+                        </ul>
+                        <% } else { %>
+                        <p class="text-muted mb-0">No està inscrit a cap assignatura.</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Notes</h5>
+            </div>
+            <div class="card-body">
+                <% if (notes.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Assignatura</th>
+                                <th>Tipus</th>
+                                <th>Trimestre</th>
+                                <th>Nota</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% notes.forEach(nota => { %>
+                            <tr>
+                                <td><%= nota.assignatura_nom %></td>
+                                <td><%= nota.tipus_nom %></td>
+                                <td><%= nota.trimestre || 'Global' %></td>
+                                <td><span class="badge bg-primary"><%= nota.nota.toFixed(2) %></span></td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                <% } else { %>
+                <p class="text-muted mb-0">No hi ha notes registrades.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark"></i> Documents</h5>
+            </div>
+            <div class="card-body">
+                <% if (documents.length > 0) { %>
+                <ul class="list-group">
+                    <% documents.forEach(doc => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-file-earmark"></i> <%= doc.nom_fitxer %>
+                            <br>
+                            <small class="text-muted"><%= doc.descripcio || 'Sense descripció' %></small>
+                        </div>
+                        <a href="/documents/<%= doc.id %>" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </li>
+                    <% }) %>
+                </ul>
+                <% } else { %>
+                <p class="text-muted mb-0">No hi ha documents.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="/alumnes/<%= alumne.id %>/editar" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="/alumnes" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Tornar
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Inscriure -->
+<div class="modal fade" id="inscriureModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/alumnes/<%= alumne.id %>/inscriure" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Inscriure a Assignatura</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="assignatura_id" class="form-label">Assignatura</label>
+                        <select class="form-select" id="assignatura_id" name="assignatura_id" required>
+                            <option value="">Seleccionar assignatura...</option>
+                            <% totesAssignatures.forEach(a => { %>
+                            <option value="<%= a.id %>"><%= a.nom %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel·lar</button>
+                    <button type="submit" class="btn btn-primary">Inscriure</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') %>

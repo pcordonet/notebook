@@ -1,0 +1,123 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-journal-bookmark"></i> <%= assignatura.nom %>
+        </h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Detalls de l'Assignatura</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Nom</dt>
+                            <dd class="col-sm-8"><%= assignatura.nom %></dd>
+
+                            <dt class="col-sm-4">Descripció</dt>
+                            <dd class="col-sm-8"><%= assignatura.descripcio || '-' %></dd>
+
+                            <dt class="col-sm-4">Aula</dt>
+                            <dd class="col-sm-8"><%= assignatura.codi_aula %> - <%= assignatura.nom_aula || '' %></dd>
+
+                            <dt class="col-sm-4">Any Curs</dt>
+                            <dd class="col-sm-8"><%= assignatura.any_curs %></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Alumnes Inscrits</h5>
+                        <a href="/assignatures/<%= assignatura.id %>/alumnes" class="btn btn-sm btn-primary">
+                            <i class="bi bi-people"></i> Gestionar
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <% if (alumnes.length > 0) { %>
+                        <ul class="list-group">
+                            <% alumnes.forEach(alumne => { %>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="/alumnes/<%= alumne.id %>"><%= alumne.cognoms %>, <%= alumne.nom %></a>
+                                <span class="badge bg-success">Actiu</span>
+                            </li>
+                            <% }) %>
+                        </ul>
+                        <% } else { %>
+                        <p class="text-muted mb-0">No hi ha alumnes inscrits.</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Tipus de Nota</h5>
+                <a href="/assignatures/<%= assignatura.id %>/tipus_nota/crear" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> Afegir Tipus
+                </a>
+            </div>
+            <div class="card-body">
+                <% if (tipusNota.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Descripció</th>
+                                <th>Pes Trimestre</th>
+                                <th>Pes Global</th>
+                                <th>Trimestre</th>
+                                <th>Accions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% tipusNota.forEach(tn => { %>
+                            <tr>
+                                <td><%= tn.nom %></td>
+                                <td><%= tn.descripcio || '-' %></td>
+                                <td><%= tn.pes_trimestre %></td>
+                                <td><%= tn.pes_global %></td>
+                                <td><%= tn.trimestre || 'Tots' %></td>
+                                <td>
+                                    <a href="/assignatures/<%= assignatura.id %>/tipus_nota/<%= tn.id %>/editar" class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form action="/assignatures/<%= assignatura.id %>/tipus_nota/<%= tn.id %>/eliminar" method="POST" class="d-inline" onsubmit="return confirm('Estàs segur?')">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                <% } else { %>
+                <p class="text-muted mb-0">No hi ha tipus de nota configurats.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="/assignatures/<%= assignatura.id %>/editar" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="/assignatures/<%= assignatura.id %>/avaluacio" class="btn btn-info">
+                <i class="bi bi-printer"></i> Llibre d'Avaluació
+            </a>
+            <a href="/assignatures" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Tornar
+            </a>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') %>

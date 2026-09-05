@@ -1,0 +1,92 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            <i class="bi bi-list-check"></i>
+            <%= tipusNota && tipusNota.id ? 'Modificar Tipus de Nota' : 'Crear Tipus de Nota' %>
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Assignatura: <%= assignatura.nom %></h5>
+            </div>
+        </div>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> <%= error %>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-body">
+                <form action="<%= tipusNota && tipusNota.id ? '/assignatures/' + assignatura.id + '/tipus_nota/' + tipusNota.id + '/editar' : '/assignatures/' + assignatura.id + '/tipus_nota/crear' %>" method="POST">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom del Tipus *</label>
+                        <input type="text" class="form-control" id="nom" name="nom"
+                               value="<%= tipusNota ? tipusNota.nom : '' %>" required placeholder="Ex: Examen, Treball, Prova oral">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descripcio" class="form-label">Descripció</label>
+                        <textarea class="form-control" id="descripcio" name="descripcio" rows="2"><%= tipusNota ? tipusNota.descripcio : '' %></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="tipus" class="form-label">Tipus *</label>
+                                <select class="form-select" id="tipus" name="tipus" required>
+                                    <option value="Nota" <%= (tipusNota && tipusNota.tipus === 'Nota') ? 'selected' : '' %>>Nota</option>
+                                    <option value="Comportament" <%= (tipusNota && tipusNota.tipus === 'Comportament') ? 'selected' : '' %>>Comportament</option>
+                                </select>
+                                <div class="form-text">Nota per avaluacions, Comportament per conducta</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="pes_trimestre" class="form-label">Pes Trimestre</label>
+                                <input type="number" class="form-control" id="pes_trimestre" name="pes_trimestre"
+                                       value="<%= tipusNota ? tipusNota.pes_trimestre : '1.0' %>" step="0.1" min="0">
+                                <div class="form-text">Pes per al càlcul de la mitjana del trimestre</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="pes_global" class="form-label">Pes Global</label>
+                                <input type="number" class="form-control" id="pes_global" name="pes_global"
+                                       value="<%= tipusNota ? tipusNota.pes_global : '1.0' %>" step="0.1" min="0">
+                                <div class="form-text">Pes per al càlcul de la nota global del curs</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="trimestre" class="form-label">Trimestre</label>
+                        <select class="form-select" id="trimestre" name="trimestre">
+                            <option value="">Tots els trimestres (default curs)</option>
+                            <option value="1" <%= (tipusNota && tipusNota.trimestre == 1) ? 'selected' : '' %>>1r Trimestre</option>
+                            <option value="2" <%= (tipusNota && tipusNota.trimestre == 2) ? 'selected' : '' %>>2n Trimestre</option>
+                            <option value="3" <%= (tipusNota && tipusNota.trimestre == 3) ? 'selected' : '' %>>3r Trimestre</option>
+                        </select>
+                        <div class="form-text">Si selecciones "Tots", s'aplicarà a tots els trimestres</div>
+                    </div>
+
+                    <input type="hidden" name="assignatura_id" value="<%= assignatura.id %>">
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar
+                        </button>
+                        <a href="/assignatures/<%= assignatura.id %>" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel·lar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') %>

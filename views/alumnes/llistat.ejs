@@ -1,0 +1,51 @@
+<%- include('../header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people"></i> Alumnes</h1>
+    <a href="/alumnes/crear" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Crear Alumne
+    </a>
+</div>
+
+<% if (alumnes.length > 0) { %>
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Nom</th>
+                <th>Cognoms</th>
+                <th>Data Naixement</th>
+                <th>Accions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% alumnes.forEach(alumne => { %>
+            <tr>
+                <td><%= alumne.nom %></td>
+                <td><%= alumne.cognoms %></td>
+                <td><%= alumne.data_naixement || '-' %></td>
+                <td>
+                    <a href="/alumnes/<%= alumne.id %>" class="btn btn-sm btn-info" title="Veure">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="/alumnes/<%= alumne.id %>/editar" class="btn btn-sm btn-warning" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <form action="/alumnes/<%= alumne.id %>/eliminar" method="POST" class="d-inline" onsubmit="return confirm('Estàs segur?')">
+                        <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>
+<% } else { %>
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> No hi ha alumnes registrats.
+</div>
+<% } %>
+
+<%- include('../footer') %>

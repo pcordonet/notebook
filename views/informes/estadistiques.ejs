@@ -1,0 +1,223 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4"><i class="bi bi-bar-chart"></i> Estadístiques</h1>
+
+        <!-- Resum general -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title"><i class="bi bi-people"></i> Alumnes</h5>
+                        <h2><%= totalAlumnes %></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success">
+                    <div class="card-body text-center">
+                        <h5 class="card-title"><i class="bi bi-journal-bookmark"></i> Assignatures</h5>
+                        <h2><%= totalAssignatures %></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-info">
+                    <div class="card-body text-center">
+                        <h5 class="card-title"><i class="bi bi-pencil-square"></i> Notes</h5>
+                        <h2><%= totalNotes %></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Mitjana per assignatura -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Mitjana per Assignatura</h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (mitjanaPerAssignatura.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Assignatura</th>
+                                        <th>Mitjana</th>
+                                        <th>Alumnes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% mitjanaPerAssignatura.forEach(m => { %>
+                                    <tr>
+                                        <td><%= m.assignatura %></td>
+                                        <td>
+                                            <% if (m.mitjana_global !== null) { %>
+                                            <span class="badge bg-primary"><%= m.mitjana_global %></span>
+                                            <% } else { %>
+                                            <span class="text-muted">-</span>
+                                            <% } %>
+                                        </td>
+                                        <td><%= m.num_alumnes %></td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } else { %>
+                        <p class="text-muted">No hi ha dades disponibles.</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mitjana per alumne -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Mitjana per Alumne</h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (mitjanaPerAlumne.length > 0) { %>
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Alumne</th>
+                                        <th>Mitjana</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% mitjanaPerAlumne.forEach(m => { %>
+                                    <tr>
+                                        <td><%= m.cognoms %>, <%= m.nom %></td>
+                                        <td>
+                                            <% if (m.mitjana_global !== null) { %>
+                                            <span class="badge bg-primary"><%= m.mitjana_global %></span>
+                                            <% } else { %>
+                                            <span class="text-muted">-</span>
+                                            <% } %>
+                                        </td>
+                                        <td><%= m.num_notes %></td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } else { %>
+                        <p class="text-muted">No hi ha dades disponibles.</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Notes més altes -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-trophy"></i> Notes més Altes</h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (notesAltes.length > 0) { %>
+                        <ul class="list-group">
+                            <% notesAltes.forEach(n => { %>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong><%= n.cognoms %>, <%= n.nom %></strong>
+                                    <br>
+                                    <small class="text-muted"><%= n.assignatura_nom %> - <%= n.tipus_nom %></small>
+                                </div>
+                                <span class="badge bg-success fs-6"><%= n.nota.toFixed(2) %></span>
+                            </li>
+                            <% }) %>
+                        </ul>
+                        <% } else { %>
+                        <p class="text-muted">No hi ha notes registrades.</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes més baixes -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Notes més Baixes</h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (notesBaixes.length > 0) { %>
+                        <ul class="list-group">
+                            <% notesBaixes.forEach(n => { %>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong><%= n.cognoms %>, <%= n.nom %></strong>
+                                    <br>
+                                    <small class="text-muted"><%= n.assignatura_nom %> - <%= n.tipus_nom %></small>
+                                </div>
+                                <span class="badge bg-danger fs-6"><%= n.nota.toFixed(2) %></span>
+                            </li>
+                            <% }) %>
+                        </ul>
+                        <% } else { %>
+                        <p class="text-muted">No hi ha notes registrades.</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aprovats/Suspesos per assignatura -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Aprovats/Suspesos per Assignatura</h5>
+            </div>
+            <div class="card-body">
+                <% if (aprovatsPerAssignatura.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Assignatura</th>
+                                <th>Total Alumnes</th>
+                                <th>Aprovats</th>
+                                <th>Suspesos</th>
+                                <th>% Aprovats</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% aprovatsPerAssignatura.forEach(a => { %>
+                            <tr>
+                                <td><%= a.assignatura %></td>
+                                <td><%= a.total %></td>
+                                <td><span class="badge bg-success"><%= a.aprovats %></span></td>
+                                <td><span class="badge bg-danger"><%= a.suspesos %></span></td>
+                                <td>
+                                    <% if (a.total > 0) { %>
+                                    <% const pct = (a.aprovats / a.total * 100).toFixed(1); %>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" style="width: <%= pct %>%"><%= pct %>%</div>
+                                    </div>
+                                    <% } else { %>
+                                    <span class="text-muted">-</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                <% } else { %>
+                <p class="text-muted">No hi ha dades disponibles.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') %>

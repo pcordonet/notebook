@@ -1,0 +1,94 @@
+/* Estils personalitzats */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: none;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.btn {
+    border-radius: 0.375rem;
+}
+
+footer {
+    border-top: 1px solid #dee2e6;
+}
+
+/* Progress bar */
+.progress {
+    border-radius: 0.5rem;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 0.5rem;
+}
+
+/* Taules amb scroll */
+.table-responsive {
+    border-radius: 0.375rem;
+}
+
+/* Cards de stats */
+.card.text-white h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* Alertes */
+.alert {
+    border: none;
+    border-radius: 0.375rem;
+}
+
+/* Formularis */
+.form-control:focus,
+.form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Navbar responsive */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        padding-top: 1rem;
+    }
+
+    .nav-link {
+        padding: 0.5rem 0;
+    }
+}
+
+/* Taula del llibre de notes */
+.table-bordered th,
+.table-bordered td {
+    vertical-align: middle;
+}
+
+.table-bordered th {
+    position: sticky;
+    top: 0;
+    background-color: #343a40;
+    color: white;
+    z-index: 10;
+}

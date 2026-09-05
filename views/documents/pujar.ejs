@@ -1,0 +1,70 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            <i class="bi bi-upload"></i> Pujar Document
+        </h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form action="/documents/pujar" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="fitxer" class="form-label">Fitxer *</label>
+                        <input type="file" class="form-control" id="fitxer" name="fitxer" required
+                               accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
+                        <div class="form-text">Formats permesos: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (màx. 10MB)</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nota_id" class="form-label">Vincular a Nota (opcional)</label>
+                        <select class="form-select" id="nota_id" name="nota_id">
+                            <option value="">Cap nota específica</option>
+                            <% notes.forEach(nota => { %>
+                            <option value="<%= nota.id %>" <%= nota_id == nota.id ? 'selected' : '' %>>
+                                <%= nota.cognoms %>, <%= nota.nom %> - <%= nota.assignatura_nom %> (<%= nota.nota.toFixed(2) %>)
+                            </option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="alumne_id" class="form-label">Vincular a Alumne (opcional)</label>
+                        <select class="form-select" id="alumne_id" name="alumne_id">
+                            <option value="">Cap alumne específic</option>
+                            <% alumnes.forEach(alumne => { %>
+                            <option value="<%= alumne.id %>"><%= alumne.cognoms %>, <%= alumne.nom %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="assignatura_id" class="form-label">Vincular a Assignatura (opcional)</label>
+                        <select class="form-select" id="assignatura_id" name="assignatura_id">
+                            <option value="">Cap assignatura específica</option>
+                            <% assignatures.forEach(assignatura => { %>
+                            <option value="<%= assignatura.id %>"><%= assignatura.nom %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descripcio" class="form-label">Descripció</label>
+                        <textarea class="form-control" id="descripcio" name="descripcio" rows="2" placeholder="Ex: Examen 1r trimestre, Treball final..."></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Pujar
+                        </button>
+                        <a href="javascript:history.back()" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel·lar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') %>

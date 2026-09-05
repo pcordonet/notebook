@@ -1,0 +1,64 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            <i class="bi bi-door-open"></i> <%= aula.codi_aula %>
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Detalls de l'Aula</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Any del Curs</dt>
+                    <dd class="col-sm-9"><%= aula.any_curs %></dd>
+
+                    <dt class="col-sm-3">Codi Aula</dt>
+                    <dd class="col-sm-9"><strong><%= aula.codi_aula %></strong></dd>
+
+                    <dt class="col-sm-3">Nom Aula</dt>
+                    <dd class="col-sm-9"><%= aula.nom_aula || '-' %></dd>
+
+                    <dt class="col-sm-3">Descripció</dt>
+                    <dd class="col-sm-9"><%= aula.descripcio || '-' %></dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Assignatures</h5>
+                <a href="/assignatures/crear?aula_id=<%= aula.id %>" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> Afegir Assignatura
+                </a>
+            </div>
+            <div class="card-body">
+                <% if (assignatures.length > 0) { %>
+                <ul class="list-group">
+                    <% assignatures.forEach(assignatura => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="/assignatures/<%= assignatura.id %>"><%= assignatura.nom %></a>
+                        <span class="badge bg-secondary"><%= assignatura.descripcio || 'Sense descripció' %></span>
+                    </li>
+                    <% }) %>
+                </ul>
+                <% } else { %>
+                <p class="text-muted mb-0">No hi ha assignatures en aquesta aula.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="/aules/<%= aula.id %>/editar" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="/aules" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Tornar
+            </a>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') %>

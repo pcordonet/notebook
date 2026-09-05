@@ -1,0 +1,80 @@
+<%- include('header') %>
+
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-people"></i> Alumnes</h5>
+                <h2 class="card-text"><%= stats.alumnes %></h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-door-open"></i> Aules</h5>
+                <h2 class="card-text"><%= stats.aules %></h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-journal-bookmark"></i> Assignatures</h5>
+                <h2 class="card-text"><%= stats.assignatures %></h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-pencil-square"></i> Notes</h5>
+                <h2 class="card-text"><%= stats.notes %></h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Últimes notes introduïdes</h5>
+            </div>
+            <div class="card-body">
+                <% if (ultimesNotes.length > 0) { %>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Alumne</th>
+                            <th>Assignatura</th>
+                            <th>Tipus</th>
+                            <th>Nota</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% ultimesNotes.forEach(n => { %>
+                        <tr>
+                            <td><%= n.cognoms %>, <%= n.nom %></td>
+                            <td><%= n.assignatura_nom %></td>
+                            <td><%= n.tipus_nom %></td>
+                            <td><span class="badge bg-primary"><%= n.nota.toFixed(2) %></span></td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+                <% } else { %>
+                <p class="text-muted">No hi ha notes registrades encara.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('footer') %>

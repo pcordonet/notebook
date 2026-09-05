@@ -1,0 +1,863 @@
+<%- include('../header') %>
+
+<style>
+@media print {
+    body { font-size: 10pt; margin: 0; }
+    .no-print { display: none !important; }
+    .print-page { page-break-after: always; }
+    table { font-size: 9pt; }
+    .grade-cell:hover { background-color: transparent !important; }
+    .obs-cell:hover { background-color: transparent !important; }
+    .obs-placeholder { display: none !important; }
+}
+
+.gradebook {
+    font-size: 14px;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.gradebook th,
+.gradebook td {
+    border: 1px solid #dee2e6;
+    padding: 6px 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.gradebook-header {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.gradebook-name {
+    text-align: left;
+    min-width: 200px;
+    font-weight: 500;
+}
+
+.gradebook-grade {
+    min-width: 50px;
+    height: 32px;
+}
+
+.gradebook-obs {
+    min-width: 150px;
+    text-align: left;
+}
+
+.gradebook-separator {
+    width: 8px;
+    background-color: #e9ecef;
+}
+
+.gradebook-section-header {
+    font-weight: 600;
+    font-size: 10px;
+    background-color: #e9ecef;
+    text-align: center;
+}
+
+.gradebook-student-num {
+    width: 20px;
+    font-weight: bold;
+}
+
+.gradebook-student-name {
+    text-align: left;
+    width: 180px;
+}
+
+.gradebook-eval-header {
+    font-weight: 600;
+    font-size: 11px;
+    background-color: #dee2e6;
+    text-align: center;
+}
+
+.gradebook-period-separator {
+    width: 6px;
+    background-color: #ced4da;
+}
+
+.gradebook-tipus-nota {
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    font-weight: 600;
+}
+
+.tipus-nota-text {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    display: inline-block;
+}
+
+.page-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+.btn-print {
+    margin-bottom: 10px;
+}
+
+.grade-value {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.grade-cell {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.grade-cell:hover {
+    background-color: #e3f2fd !important;
+}
+
+.grade-0 { color: #dc3545; }
+.grade-5 { color: #ffc107; }
+.grade-6 { color: #28a745; }
+.grade-10 { color: #007bff; }
+
+.obs-cell {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.obs-cell:hover {
+    background-color: #e3f2fd !important;
+}
+
+.obs-text {
+    font-size: 12px;
+}
+
+.obs-placeholder {
+    display: none;
+}
+
+.obs-cell:hover .obs-placeholder {
+    display: inline;
+}
+
+.obs-cell:hover .obs-text:empty {
+    display: none;
+}
+
+.modal-grade-input {
+    font-size: 28px;
+    text-align: center;
+    font-weight: bold;
+}
+</style>
+
+<div class="no-print">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-journal-bookmark"></i> Llibre d'Avaluació</h1>
+        <div>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+            <a href="/assignatures/<%= assignatura.id %>" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Tornar
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Assignatura:</strong> <%= assignatura.nom %>
+                </div>
+                <div class="col-md-3">
+                    <strong>Aula:</strong> <%= assignatura.codi_aula %> - <%= assignatura.any_curs %>
+                </div>
+                <div class="col-md-3">
+                    <strong>Descripció:</strong> <%= assignatura.descripcio || '-' %>
+                </div>
+                <div class="col-md-3">
+                    <strong>Alumnes:</strong> <%= alumnes.length %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-container">
+    <table class="gradebook">
+        <thead>
+            <!-- Fila 1: Capçalera amb períodes -->
+            <tr>
+                <th class="gradebook-name" rowspan="2"><strong>Nom i Cognoms</strong></th>
+                <th class="gradebook-eval-header" colspan="<%= (tipusNotaPerTrimestre[1]?.length || 0) + 1 %>">
+                    1r TRIMESTRE
+                    <a href="/assignatures/<%= assignatura.id %>/tipus_nota/crear?trimestre=1" 
+                       class="btn btn-sm btn-outline-primary ms-2 no-print" title="Afegir tipus de nota">
+                        <i class="bi bi-plus"></i>
+                    </a>
+                </th>
+                <th class="gradebook-period-separator" rowspan="2"></th>
+                <th class="gradebook-eval-header" colspan="<%= (tipusNotaPerTrimestre[2]?.length || 0) + 1 %>">
+                    2n TRIMESTRE
+                    <a href="/assignatures/<%= assignatura.id %>/tipus_nota/crear?trimestre=2" 
+                       class="btn btn-sm btn-outline-primary ms-2 no-print" title="Afegir tipus de nota">
+                        <i class="bi bi-plus"></i>
+                    </a>
+                </th>
+                <th class="gradebook-period-separator" rowspan="2"></th>
+                <th class="gradebook-eval-header" colspan="<%= (tipusNotaPerTrimestre[3]?.length || 0) + 1 %>">
+                    3r TRIMESTRE
+                    <a href="/assignatures/<%= assignatura.id %>/tipus_nota/crear?trimestre=3" 
+                       class="btn btn-sm btn-outline-primary ms-2 no-print" title="Afegir tipus de nota">
+                        <i class="bi bi-plus"></i>
+                    </a>
+                </th>
+                <th class="gradebook-period-separator" rowspan="2">                </th>
+                <th class="gradebook-obs" rowspan="2"><strong>Observacions</strong></th>
+                <th class="gradebook-eval-header" rowspan="2" style="width: 60px;"><strong>Comport.</strong></th>
+                <th class="gradebook-eval-header" rowspan="2" style="width: 40px;"><strong>M</strong></th>
+            </tr>
+
+            <!-- Fila 2: Tipus de nota per cada trimestre -->
+            <tr>
+                <% for (let t = 1; t <= 3; t++) { %>
+                    <% if (tipusNotaPerTrimestre[t] && tipusNotaPerTrimestre[t].length > 0) { %>
+                        <% tipusNotaPerTrimestre[t].forEach(function(tn) { %>
+                            <td class="gradebook-grade gradebook-tipus-nota no-print" style="height: 100px; cursor: pointer;"
+                                onclick="openTipusNotaModal('<%= tn.id %>', '<%= tn.nom %>', '<%= (tn.descripcio || "").replace(/'/g, "\\'") %>', '<%= tn.tipus || 'Nota' %>', <%= tn.pes_trimestre %>, <%= tn.pes_global %>, <%= tn.trimestre || 'null' %>)">
+                                <span class="tipus-nota-text"><%= tn.nom %></span>
+                            </td>
+                            <td class="gradebook-grade gradebook-tipus-nota print-only" style="height: 100px; display: none;">
+                                <span class="tipus-nota-text"><%= tn.nom %></span>
+                            </td>
+                        <% }); %>
+                    <% } %>
+                    <td class="gradebook-grade" style="background-color: #e9ecef;"><strong>M</strong></td>
+                <% } %>
+            </tr>
+        </thead>
+
+        <tbody>
+            <!-- Files d'alumnes -->
+            <% for (let i = 0; i < alumnes.length; i++) { %>
+            <tr>
+                <td class="gradebook-student-name">
+                    <strong><%= i + 1 %>.</strong> <%= alumnes[i].cognoms %>, <%= alumnes[i].nom %>
+                </td>
+
+                <% for (let t = 1; t <= 3; t++) { %>
+                    <% if (tipusNotaPerTrimestre[t] && tipusNotaPerTrimestre[t].length > 0) { %>
+                        <% tipusNotaPerTrimestre[t].forEach(function(tn) { %>
+                            <td class="gradebook-grade grade-cell"
+                                onclick="openGradeModal('<%= alumnes[i].id %>', '<%= tn.id %>', '<%= alumnes[i].cognoms %>, <%= alumnes[i].nom %>', '<%= tn.nom %>', '<%= notesPerAlumne[alumnes[i].id]?.[tn.id]?.nota || '' %>', '<%= (notesPerAlumne[alumnes[i].id]?.[tn.id]?.observacions || "").replace(/'/g, "\\'") %>')">
+                                <% if (notesPerAlumne[alumnes[i].id] && notesPerAlumne[alumnes[i].id][tn.id]) { %>
+                                    <% const notaData = notesPerAlumne[alumnes[i].id][tn.id]; %>
+                                    <span class="grade-value" style="<%= notaData.observacions ? 'background-color: #fff3cd; padding: 2px 4px; border-radius: 3px;' : '' %>"><%= notaData.nota.toFixed(1) %></span>
+                                <% } else { %>
+                                    <span class="text-muted">+</span>
+                                <% } %>
+                            </td>
+                        <% }); %>
+                    <% } %>
+                    <td class="gradebook-grade" style="background-color: #f8f9fa;">
+                        <% if (mitjanes[alumnes[i].id] && mitjanes[alumnes[i].id][t] !== null) { %>
+                            <strong><%= mitjanes[alumnes[i].id][t] %></strong>
+                        <% } %>
+                    </td>
+                    <% if (t < 3) { %>
+                        <td class="gradebook-period-separator"></td>
+                    <% } %>
+                <% } %>
+
+                <td class="gradebook-period-separator"></td>
+                <td class="gradebook-obs obs-cell" 
+                    onclick="openObsModal('<%= alumnes[i].id %>', '<%= assignatura.id %>', '<%= alumnes[i].cognoms %>, <%= alumnes[i].nom %>', '<%= (alumnes[i].observacions_inscripcio || "").replace(/'/g, "\\'") %>')">
+                    <span class="obs-text"><%= alumnes[i].observacions_inscripcio || '' %></span>
+                    <span class="obs-placeholder text-muted">+</span>
+                </td>
+                <td class="gradebook-grade comportament-cell" style="cursor: pointer;"
+                    onclick="openComportamentModal('<%= alumnes[i].id %>', '<%= alumnes[i].cognoms %>, <%= alumnes[i].nom %>')">
+                    <% const comp = comportamentPerAlumne[alumnes[i].id]; %>
+                    <% if (comp && comp.num_registres > 0) { %>
+                        <span class="badge <%= comp.total_punts > 0 ? 'bg-success' : (comp.total_punts < 0 ? 'bg-danger' : 'bg-secondary') %>">
+                            <%= comp.num_registres %>
+                        </span>
+                    <% } else { %>
+                        <span class="text-muted">+</span>
+                    <% } %>
+                </td>
+                <td class="gradebook-grade" style="background-color: #e9ecef;">
+                    <% if (mitjanes[alumnes[i].id] && mitjanes[alumnes[i].id].global !== null) { %>
+                        <strong><%= mitjanes[alumnes[i].id].global %></strong>
+                    <% } %>
+                </td>
+            </tr>
+            <% } %>
+
+            <!-- Fila de peu de pàgina -->
+            <tr>
+                <td class="gradebook-name"><strong>Nombre d'alumnes:</strong> <%= alumnes.length %></td>
+                <td class="gradebook-section-header" colspan="<%= (tipusNotaPerTrimestre[1]?.length || 0) + 1 %>">
+                    Mitjana: <%= mitjanesClasse[1] || '---' %>
+                </td>
+                <td class="gradebook-period-separator"></td>
+                <td class="gradebook-section-header" colspan="<%= (tipusNotaPerTrimestre[2]?.length || 0) + 1 %>">
+                    Mitjana: <%= mitjanesClasse[2] || '---' %>
+                </td>
+                <td class="gradebook-period-separator"></td>
+                <td class="gradebook-section-header" colspan="<%= (tipusNotaPerTrimestre[3]?.length || 0) + 1 %>">
+                    Mitjana: <%= mitjanesClasse[3] || '---' %>
+                </td>
+                <td class="gradebook-period-separator"></td>
+                <td class="gradebook-obs"><strong>Mitjana Global:</strong></td>
+                <td class="gradebook-grade"></td>
+                <td class="gradebook-grade" style="background-color: #e9ecef;"><strong><%= mitjanesClasse.global || '---' %></strong></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal per modificar nota -->
+<div class="modal fade" id="gradeModal" tabindex="-1" aria-labelledby="gradeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gradeModalLabel">Modificar Nota</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Alumne:</strong> <span id="modal-alumne"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Tipus de Nota:</strong> <span id="modal-tipus"></span>
+                </div>
+                <div class="mb-3">
+                    <label for="modal-nota" class="form-label">Nota (0-10)</label>
+                    <input type="number" class="form-control modal-grade-input" id="modal-nota" 
+                           min="0" max="10" step="0.1" placeholder="0.0">
+                </div>
+                <div class="mb-3">
+                    <label for="modal-observacions" class="form-label">Observacions</label>
+                    <textarea class="form-control" id="modal-observacions" rows="2" placeholder="Observacions de la nota..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel·lar</button>
+                <button type="button" class="btn btn-danger" id="btn-delete" onclick="deleteGrade()">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-save" onclick="saveGrade()">
+                    <i class="bi bi-check-circle"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per observacions -->
+<div class="modal fade" id="obsModal" tabindex="-1" aria-labelledby="obsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="obsModalLabel">Observacions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Alumne:</strong> <span id="modal-obs-alumne"></span>
+                </div>
+                <div class="mb-3">
+                    <label for="modal-obs-text" class="form-label">Observacions</label>
+                    <textarea class="form-control" id="modal-obs-text" rows="4" placeholder="Escriu les observacions..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel·lar</button>
+                <button type="button" class="btn btn-primary" onclick="saveObs()">
+                    <i class="bi bi-check-circle"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per editar tipus de nota -->
+<div class="modal fade" id="tipusNotaModal" tabindex="-1" aria-labelledby="tipusNotaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tipusNotaModalLabel">Modificar Tipus de Nota</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="modal-tn-nom" class="form-label">Nom del Tipus *</label>
+                    <input type="text" class="form-control" id="modal-tn-nom" required>
+                </div>
+                <div class="mb-3">
+                    <label for="modal-tn-descripcio" class="form-label">Descripció</label>
+                    <textarea class="form-control" id="modal-tn-descripcio" rows="2"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="modal-tn-tipus" class="form-label">Tipus *</label>
+                            <select class="form-select" id="modal-tn-tipus">
+                                <option value="Nota">Nota</option>
+                                <option value="Comportament">Comportament</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="modal-tn-pes-trimestre" class="form-label">Pes Trimestre</label>
+                            <input type="number" class="form-control" id="modal-tn-pes-trimestre" step="0.1" min="0" value="1.0">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="modal-tn-pes-global" class="form-label">Pes Global</label>
+                            <input type="number" class="form-control" id="modal-tn-pes-global" step="0.1" min="0" value="1.0">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="modal-tn-trimestre" class="form-label">Trimestre</label>
+                    <select class="form-select" id="modal-tn-trimestre">
+                        <option value="">Tots els trimestres</option>
+                        <option value="1">1r Trimestre</option>
+                        <option value="2">2n Trimestre</option>
+                        <option value="3">3r Trimestre</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="deleteTipusNota()">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel·lar</button>
+                <button type="button" class="btn btn-primary" onclick="saveTipusNota()">
+                    <i class="bi bi-check-circle"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per comportament -->
+<div class="modal fade" id="comportamentModal" tabindex="-1" aria-labelledby="comportamentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="comportamentModalLabel"><i class="bi bi-emoji-smile"></i> Comportament</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Alumne:</strong> <span id="modal-comp-alumne"></span>
+                    <span class="badge bg-secondary ms-2" id="modal-comp-total"></span>
+                </div>
+                <div id="modal-comp-list" class="mb-3">
+                    <p class="text-muted">Carregant...</p>
+                </div>
+                <hr>
+                <h6>Afegir registre</h6>
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <select class="form-select" id="modal-comp-tipus">
+                            <option value="positiu">Positiu</option>
+                            <option value="negatiu">Negatiu</option>
+                            <option value="incidencia">Incidència</option>
+                            <option value="expulsio">Expulsió</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" id="modal-comp-punts" placeholder="Punts" value="0">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" class="form-control" id="modal-comp-data">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="modal-comp-descripcio" placeholder="Descripció">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tancar</button>
+                <button type="button" class="btn btn-primary" onclick="addComportament()">
+                    <i class="bi bi-plus-circle"></i> Afegir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentAlumneId = null;
+let currentTipusNotaId = null;
+
+function openGradeModal(alumneId, tipusNotaId, alumneNom, tipusNom, currentGrade, currentObs) {
+    currentAlumneId = alumneId;
+    currentTipusNotaId = tipusNotaId;
+    
+    document.getElementById('modal-alumne').textContent = alumneNom;
+    document.getElementById('modal-tipus').textContent = tipusNom;
+    document.getElementById('modal-nota').value = currentGrade || '';
+    document.getElementById('modal-observacions').value = currentObs || '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('gradeModal'));
+    modal.show();
+    
+    // Focus on input
+    setTimeout(() => {
+        document.getElementById('modal-nota').focus();
+        document.getElementById('modal-nota').select();
+    }, 300);
+}
+
+function saveGrade() {
+    const nota = document.getElementById('modal-nota').value;
+    const observacions = document.getElementById('modal-observacions').value;
+    
+    if (nota === '' || isNaN(nota) || nota < 0 || nota > 10) {
+        alert('Si us plau, introdueix una nota vàlida (0-10)');
+        return;
+    }
+    
+    fetch('/notes/api/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            alumne_id: currentAlumneId,
+            tipus_nota_id: currentTipusNotaId,
+            nota: parseFloat(nota),
+            observacions: observacions || null
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error al guardar la nota: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error de connexió: ' + error);
+    });
+}
+
+function deleteGrade() {
+    if (!confirm('Estàs segur que vols eliminar aquesta nota?')) {
+        return;
+    }
+    
+    // Buscar i eliminar la nota existent
+    fetch(`/notes/api/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            alumne_id: currentAlumneId,
+            tipus_nota_id: currentTipusNotaId,
+            nota: null
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error al eliminar la nota: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error de connexió: ' + error);
+    });
+}
+
+// Permitir guardar amb Enter
+document.getElementById('modal-nota').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        saveGrade();
+    }
+});
+
+// Observacions
+let currentObsAlumneId = null;
+let currentObsAssignaturaId = null;
+
+function openObsModal(alumneId, assignaturaId, alumneNom, currentObs) {
+    currentObsAlumneId = alumneId;
+    currentObsAssignaturaId = assignaturaId;
+    
+    document.getElementById('modal-obs-alumne').textContent = alumneNom;
+    document.getElementById('modal-obs-text').value = currentObs || '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('obsModal'));
+    modal.show();
+    
+    setTimeout(() => {
+        document.getElementById('modal-obs-text').focus();
+    }, 300);
+}
+
+function saveObs() {
+    const observacions = document.getElementById('modal-obs-text').value;
+    
+    fetch('/assignatures/api/observacions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            alumne_id: currentObsAlumneId,
+            assignatura_id: currentObsAssignaturaId,
+            observacions: observacions
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error al guardar: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error de connexió: ' + error);
+    });
+}
+
+// Tipus de Nota
+let currentTipusNotaEditId = null;
+
+function openTipusNotaModal(id, nom, descripcio, tipus, pesTrimestre, pesGlobal, trimestre) {
+    currentTipusNotaEditId = id;
+    
+    document.getElementById('modal-tn-nom').value = nom;
+    document.getElementById('modal-tn-descripcio').value = descripcio || '';
+    document.getElementById('modal-tn-tipus').value = tipus || 'Nota';
+    document.getElementById('modal-tn-pes-trimestre').value = pesTrimestre;
+    document.getElementById('modal-tn-pes-global').value = pesGlobal;
+    document.getElementById('modal-tn-trimestre').value = trimestre === null ? '' : trimestre;
+    
+    const modal = new bootstrap.Modal(document.getElementById('tipusNotaModal'));
+    modal.show();
+}
+
+function saveTipusNota() {
+    const nom = document.getElementById('modal-tn-nom').value;
+    const descripcio = document.getElementById('modal-tn-descripcio').value;
+    const tipus = document.getElementById('modal-tn-tipus').value;
+    const pes_trimestre = parseFloat(document.getElementById('modal-tn-pes-trimestre').value);
+    const pes_global = parseFloat(document.getElementById('modal-tn-pes-global').value);
+    const trimestre = document.getElementById('modal-tn-trimestre').value;
+    
+    if (!nom) {
+        alert('Si us plau, introdueix un nom');
+        return;
+    }
+    
+    fetch('/assignatures/<%= assignatura.id %>/tipus_nota/' + currentTipusNotaEditId + '/editar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            nom: nom,
+            descripcio: descripcio,
+            tipus: tipus,
+            pes_trimestre: pes_trimestre,
+            pes_global: pes_global,
+            trimestre: trimestre || null
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error de connexió: ' + error);
+    });
+}
+
+function deleteTipusNota() {
+    // Primer comprovar si té notes
+    fetch('/assignatures/<%= assignatura.id %>/tipus_nota/' + currentTipusNotaEditId + '/check-notes')
+    .then(response => response.json())
+    .then(data => {
+        if (data.hasNotes) {
+            alert('No es pot eliminar: té ' + data.count + ' nota(es) registrada(es). Elimina les notes primer.');
+            return;
+        }
+        
+        if (!confirm('Estàs segur que vols eliminar aquest tipus de nota?')) {
+            return;
+        }
+        
+        fetch('/assignatures/<%= assignatura.id %>/tipus_nota/' + currentTipusNotaEditId + '/eliminar-ajax', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error de connexió: ' + error);
+        });
+    })
+    .catch(error => {
+        alert('Error de connexió: ' + error);
+    });
+}
+
+// Comportament
+let currentCompAlumneId = null;
+let compChanged = false;
+
+function badgeClassForTipus(tipus) {
+    switch (tipus) {
+        case 'positiu': return 'bg-success';
+        case 'negatiu': return 'bg-warning text-dark';
+        case 'incidencia': return 'bg-danger';
+        case 'expulsio': return 'bg-dark';
+        default: return 'bg-secondary';
+    }
+}
+
+function openComportamentModal(alumneId, alumneNom) {
+    currentCompAlumneId = alumneId;
+    compChanged = false;
+
+    document.getElementById('modal-comp-alumne').textContent = alumneNom;
+    document.getElementById('modal-comp-descripcio').value = '';
+    document.getElementById('modal-comp-punts').value = 0;
+    document.getElementById('modal-comp-tipus').value = 'positiu';
+    document.getElementById('modal-comp-data').value = new Date().toISOString().split('T')[0];
+
+    loadComportament();
+
+    const modal = new bootstrap.Modal(document.getElementById('comportamentModal'));
+    modal.show();
+}
+
+function loadComportament() {
+    const list = document.getElementById('modal-comp-list');
+    list.innerHTML = '<p class="text-muted">Carregant...</p>';
+
+    fetch('/assignatures/<%= assignatura.id %>/comportament/alumne/' + currentCompAlumneId)
+        .then(response => response.json())
+        .then(registres => {
+            if (registres.length === 0) {
+                list.innerHTML = '<p class="text-muted">Sense registres de comportament.</p>';
+            } else {
+                let html = '<table class="table table-sm align-middle"><tbody>';
+                registres.forEach(reg => {
+                    html += '<tr>' +
+                        '<td style="white-space: nowrap;">' + reg.data + '</td>' +
+                        '<td><span class="badge ' + badgeClassForTipus(reg.tipus) + '">' + reg.tipus + '</span></td>' +
+                        '<td>' + reg.descripcio + '</td>' +
+                        '<td class="text-end">' + (reg.punts > 0 ? '+' : '') + reg.punts + '</td>' +
+                        '<td><button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteComportament(' + reg.id + ')"><i class="bi bi-trash"></i></button></td>' +
+                        '</tr>';
+                });
+                html += '</tbody></table>';
+                list.innerHTML = html;
+            }
+            return fetch('/assignatures/<%= assignatura.id %>/comportament/resum/' + currentCompAlumneId);
+        })
+        .then(response => response.json())
+        .then(resum => {
+            const total = resum.reduce((suma, r) => suma + (r.total_punts || 0), 0);
+            const totalEl = document.getElementById('modal-comp-total');
+            totalEl.textContent = 'Total: ' + (total > 0 ? '+' : '') + total + ' punts';
+            totalEl.className = 'badge ms-2 ' + (total > 0 ? 'bg-success' : (total < 0 ? 'bg-danger' : 'bg-secondary'));
+        })
+        .catch(error => {
+            list.innerHTML = '<p class="text-danger">Error carregant els registres.</p>';
+        });
+}
+
+function addComportament() {
+    const tipus = document.getElementById('modal-comp-tipus').value;
+    const punts = parseInt(document.getElementById('modal-comp-punts').value, 10) || 0;
+    const data = document.getElementById('modal-comp-data').value;
+    const descripcio = document.getElementById('modal-comp-descripcio').value.trim();
+
+    if (!descripcio) {
+        alert('Si us plau, introdueix una descripció');
+        return;
+    }
+
+    fetch('/assignatures/<%= assignatura.id %>/comportament/crear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alumne_id: currentCompAlumneId, tipus, descripcio, punts, data })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            compChanged = true;
+            document.getElementById('modal-comp-descripcio').value = '';
+            document.getElementById('modal-comp-punts').value = 0;
+            loadComportament();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    })
+    .catch(error => {
+        alert('Error de connexió: ' + error);
+    });
+}
+
+function deleteComportament(id) {
+    if (!confirm('Estàs segur que vols eliminar aquest registre?')) {
+        return;
+    }
+
+    fetch('/assignatures/<%= assignatura.id %>/comportament/' + id + '/eliminar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            compChanged = true;
+            loadComportament();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    })
+    .catch(error => {
+        alert('Error de connexió: ' + error);
+    });
+}
+
+document.getElementById('comportamentModal').addEventListener('hidden.bs.modal', function() {
+    if (compChanged) {
+        location.reload();
+    }
+});
+</script>
+
+<%- include('../footer') %>
