@@ -1,0 +1,90 @@
+<%- include('../header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="bi bi-person-hearts"></i> El Meu Grup
+        <small class="text-muted fs-5">— <%= assignatura.codi_aula %><% if (assignatura.nom_aula) { %> (<%= assignatura.nom_aula %>)<% } %></small>
+    </h1>
+    <a href="/assignatures/<%= assignatura.id %>" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Tornar
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="mb-0"><%= alumnes.length %></h2>
+                <div class="text-muted">Alumnes al grup</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="mb-0 <%= totalSeguimentsActius > 0 ? 'text-warning' : '' %>"><%= totalSeguimentsActius %></h2>
+                <div class="text-muted">Seguiments actius</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="mb-0 <%= totalIncidencies > 0 ? 'text-danger' : '' %>"><%= totalIncidencies %></h2>
+                <div class="text-muted">Incidències registrades</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Alumnes del grup</h5>
+    </div>
+    <div class="card-body">
+        <% if (alumnes.length > 0) { %>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Alumne</th>
+                        <th class="text-center">Incidències</th>
+                        <th class="text-center">Seguiments actius</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% alumnes.forEach(alumne => { %>
+                    <tr>
+                        <td><a href="/alumnes/<%= alumne.id %>"><%= alumne.cognoms %>, <%= alumne.nom %></a></td>
+                        <td class="text-center">
+                            <% if (alumne.incidencies > 0) { %>
+                                <span class="badge bg-danger"><%= alumne.incidencies %></span>
+                            <% } else { %>
+                                <span class="text-muted">—</span>
+                            <% } %>
+                        </td>
+                        <td class="text-center">
+                            <% if (alumne.seguimentsActius > 0) { %>
+                                <span class="badge bg-warning text-dark"><%= alumne.seguimentsActius %></span>
+                            <% } else { %>
+                                <span class="text-muted">—</span>
+                            <% } %>
+                        </td>
+                        <td class="text-end">
+                            <a href="/alumnes/<%= alumne.id %>#tutoria" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-person-lines-fill"></i> Fitxa
+                            </a>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+        <% } else { %>
+        <p class="text-muted mb-0">No hi ha alumnes inscrits en aquest grup.</p>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../footer') %>

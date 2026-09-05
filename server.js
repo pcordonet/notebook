@@ -82,6 +82,8 @@ app.use('/notes', require('./routes/notes'));
 app.use('/documents', require('./routes/documents'));
 app.use('/llibre', require('./routes/llibre'));
 app.use('/informes', require('./routes/informes'));
+app.use('/seguiments', require('./routes/seguiments'));
+app.use('/tutories', require('./routes/tutories'));
 
 // 404
 app.use((req, res) => {

@@ -4,6 +4,9 @@
     <div class="col-12">
         <h1 class="mb-4">
             <i class="bi bi-journal-bookmark"></i> <%= assignatura.nom %>
+            <% if (assignatura.es_tutoria) { %>
+            <span class="badge bg-info align-middle"><i class="bi bi-person-hearts"></i> Tutoria</span>
+            <% } %>
         </h1>
 
         <div class="row">
@@ -113,6 +116,11 @@
             <a href="/assignatures/<%= assignatura.id %>/avaluacio" class="btn btn-info">
                 <i class="bi bi-printer"></i> Llibre d'Avaluació
             </a>
+            <% if (assignatura.es_tutoria) { %>
+            <a href="/assignatures/<%= assignatura.id %>/tutoria" class="btn btn-success">
+                <i class="bi bi-person-hearts"></i> El Meu Grup
+            </a>
+            <% } %>
             <a href="/assignatures" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Tornar
             </a>

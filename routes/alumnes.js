@@ -76,7 +76,28 @@ router.get('/:id', async (req, res) => {
     // Obtenir totes les assignatures per al modal d'inscripció
     const totesAssignatures = runQuery(db, 'SELECT * FROM assignatures ORDER BY nom');
 
-    res.render('alumnes/fitxa', { title: alumne.nom + ' ' + alumne.cognoms, alumne, assignatures, notes, documents, totesAssignatures });
+    // Grup de tutoria de l'alumne (si n'hi ha)
+    const tutories_grup = runQuery(db, `
+        SELECT a.*, au.codi_aula, au.any_curs
+        FROM assignatures a
+        JOIN alumne_assignatura aa ON a.id = aa.assignatura_id
+        JOIN aules au ON a.aula_id = au.id
+        WHERE aa.alumne_id = ? AND aa.actiu = 1 AND a.es_tutoria = 1
+    `, [req.params.id]);
+
+    // Seguiments de l'alumne
+    const seguiments = runQuery(db, 'SELECT * FROM seguiments WHERE alumne_id = ? ORDER BY data_obertura DESC', [req.params.id]);
+
+    // Tutories individuals de l'alumne
+    const tutoriesIndividuals = runQuery(db, 'SELECT * FROM tutories_individuals WHERE alumne_id = ? ORDER BY data DESC', [req.params.id]);
+
+    res.render('alumnes/fitxa', {
+        title: alumne.nom + ' ' + alumne.cognoms,
+        alumne, assignatures, notes, documents, totesAssignatures,
+        grupTutoria: tutories_grup[0] || null,
+        seguiments,
+        tutoriesIndividuals
+    });
 });
 
 // Formulari modificar alumne

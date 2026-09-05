@@ -22,7 +22,12 @@
         <tbody>
             <% assignatures.forEach(assignatura => { %>
             <tr>
-                <td><%= assignatura.nom %></td>
+                <td>
+                    <%= assignatura.nom %>
+                    <% if (assignatura.es_tutoria) { %>
+                    <span class="badge bg-info"><i class="bi bi-person-hearts"></i> Tutoria</span>
+                    <% } %>
+                </td>
                 <td><%= assignatura.descripcio || '-' %></td>
                 <td><%= assignatura.codi_aula %></td>
                 <td><%= assignatura.any_curs %></td>

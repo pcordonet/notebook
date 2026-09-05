@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS assignatures (
     descripcio TEXT,
     aula_id INTEGER NOT NULL,
     actiu INTEGER DEFAULT 1,
+    es_tutoria INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (aula_id) REFERENCES aules(id) ON DELETE CASCADE
 );
@@ -108,6 +109,48 @@ CREATE TABLE IF NOT EXISTS comportament (
     FOREIGN KEY (assignatura_id) REFERENCES assignatures(id) ON DELETE CASCADE
 );
 
+-- 9. SEGUIMENTS (mòdul de tutoria)
+CREATE TABLE IF NOT EXISTS seguiments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    alumne_id INTEGER NOT NULL,
+    tipus TEXT NOT NULL CHECK(tipus IN ('academic', 'absentisme', 'comportament', 'convivencia', 'personal', 'orientacio', 'altres')),
+    responsable TEXT,
+    motiu TEXT NOT NULL,
+    estat TEXT NOT NULL DEFAULT 'obert' CHECK(estat IN ('obert', 'en_seguiment', 'resolucio', 'tancat')),
+    data_obertura DATE DEFAULT CURRENT_DATE,
+    data_tancament DATE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (alumne_id) REFERENCES alumnes(id) ON DELETE CASCADE
+);
+
+-- 10. SEGUIMENT_ACCIONS (línia de temps d'actuacions dins un seguiment)
+CREATE TABLE IF NOT EXISTS seguiment_accions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    seguiment_id INTEGER NOT NULL,
+    data DATE DEFAULT CURRENT_DATE,
+    descripcio TEXT NOT NULL,
+    fet INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (seguiment_id) REFERENCES seguiments(id) ON DELETE CASCADE
+);
+
+-- 11. TUTORIES_INDIVIDUALS (registre de converses tutor-alumne)
+CREATE TABLE IF NOT EXISTS tutories_individuals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    alumne_id INTEGER NOT NULL,
+    seguiment_id INTEGER,
+    data DATE DEFAULT CURRENT_DATE,
+    motiu TEXT,
+    temes_tractats TEXT,
+    observacions TEXT,
+    acords TEXT,
+    data_seguiment DATE,
+    estat TEXT NOT NULL DEFAULT 'pendent' CHECK(estat IN ('pendent', 'fet', 'cancelat')),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (alumne_id) REFERENCES alumnes(id) ON DELETE CASCADE,
+    FOREIGN KEY (seguiment_id) REFERENCES seguiments(id) ON DELETE SET NULL
+);
+
 -- =============================================
 -- INDEXOS
 -- =============================================
@@ -118,3 +161,6 @@ CREATE INDEX IF NOT EXISTS idx_alumne_assignatura_alumne ON alumne_assignatura(a
 CREATE INDEX IF NOT EXISTS idx_alumne_assignatura_assignatura ON alumne_assignatura(assignatura_id);
 CREATE INDEX IF NOT EXISTS idx_documents_nota ON documents(nota_id);
 CREATE INDEX IF NOT EXISTS idx_documents_alumne ON documents(alumne_id);
+CREATE INDEX IF NOT EXISTS idx_seguiments_alumne ON seguiments(alumne_id);
+CREATE INDEX IF NOT EXISTS idx_seguiment_accions_seguiment ON seguiment_accions(seguiment_id);
+CREATE INDEX IF NOT EXISTS idx_tutories_individuals_alumne ON tutories_individuals(alumne_id);

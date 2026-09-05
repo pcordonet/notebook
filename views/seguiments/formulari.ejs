@@ -1,0 +1,55 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            <i class="bi bi-clipboard2-pulse"></i> Nou Seguiment
+        </h1>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> <%= error %>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Alumne:</strong> <%= alumne.cognoms %>, <%= alumne.nom %></p>
+
+                <form action="/seguiments/crear" method="POST">
+                    <input type="hidden" name="alumne_id" value="<%= alumne.id %>">
+
+                    <div class="mb-3">
+                        <label for="tipus" class="form-label">Tipus *</label>
+                        <select class="form-select" id="tipus" name="tipus" required>
+                            <% Object.keys(tipusLabels).forEach(key => { %>
+                            <option value="<%= key %>"><%= tipusLabels[key] %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="responsable" class="form-label">Responsable</label>
+                        <input type="text" class="form-control" id="responsable" name="responsable" value="Tutor" placeholder="Ex: Tutor, Cap d'estudis...">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="motiu" class="form-label">Motiu *</label>
+                        <textarea class="form-control" id="motiu" name="motiu" rows="3" required placeholder="Descriu el motiu pel qual s'obre el seguiment..."></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Obrir Seguiment
+                        </button>
+                        <a href="/alumnes/<%= alumne.id %>" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel·lar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') %>

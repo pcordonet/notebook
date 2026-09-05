@@ -1,0 +1,101 @@
+<%- include('../header') %>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            <i class="bi bi-chat-dots"></i>
+            <%= tutoria && tutoria.id ? 'Modificar Tutoria Individual' : 'Nova Tutoria Individual' %>
+        </h1>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> <%= error %>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Alumne:</strong> <%= alumne.cognoms %>, <%= alumne.nom %></p>
+
+                <form action="<%= tutoria && tutoria.id ? '/tutories/' + tutoria.id + '/editar' : '/tutories/crear' %>" method="POST">
+                    <input type="hidden" name="alumne_id" value="<%= alumne.id %>">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data" class="form-label">Data</label>
+                                <input type="date" class="form-control" id="data" name="data"
+                                       value="<%= tutoria && tutoria.data ? tutoria.data : new Date().toISOString().split('T')[0] %>">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="seguiment_id" class="form-label">Seguiment relacionat (opcional)</label>
+                                <select class="form-select" id="seguiment_id" name="seguiment_id">
+                                    <option value="">Cap</option>
+                                    <% seguimentsOberts.forEach(s => { %>
+                                    <option value="<%= s.id %>" <%= (tutoria && tutoria.seguiment_id == s.id) ? 'selected' : '' %>>
+                                        #<%= s.id %> — <%= s.motiu %>
+                                    </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="motiu" class="form-label">Motiu</label>
+                        <input type="text" class="form-control" id="motiu" name="motiu"
+                               value="<%= tutoria ? tutoria.motiu || '' : '' %>" placeholder="Ex: Rendiment acadèmic">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="temes_tractats" class="form-label">Temes tractats</label>
+                        <textarea class="form-control" id="temes_tractats" name="temes_tractats" rows="3"><%= tutoria ? tutoria.temes_tractats || '' : '' %></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacions" class="form-label">Observacions</label>
+                        <textarea class="form-control" id="observacions" name="observacions" rows="2"><%= tutoria ? tutoria.observacions || '' : '' %></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="acords" class="form-label">Acords</label>
+                        <textarea class="form-control" id="acords" name="acords" rows="2" placeholder="Ex: L'alumne entregarà les activitats pendents."><%= tutoria ? tutoria.acords || '' : '' %></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data_seguiment" class="form-label">Data de seguiment</label>
+                                <input type="date" class="form-control" id="data_seguiment" name="data_seguiment"
+                                       value="<%= tutoria && tutoria.data_seguiment ? tutoria.data_seguiment : '' %>">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="estat" class="form-label">Estat</label>
+                                <select class="form-select" id="estat" name="estat">
+                                    <option value="pendent" <%= (!tutoria || tutoria.estat === 'pendent') ? 'selected' : '' %>>Pendent</option>
+                                    <option value="fet" <%= (tutoria && tutoria.estat === 'fet') ? 'selected' : '' %>>Fet</option>
+                                    <option value="cancelat" <%= (tutoria && tutoria.estat === 'cancelat') ? 'selected' : '' %>>Cancel·lat</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar
+                        </button>
+                        <a href="/alumnes/<%= alumne.id %>" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel·lar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') %>

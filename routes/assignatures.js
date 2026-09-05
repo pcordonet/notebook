@@ -41,11 +41,11 @@ router.get('/crear', async (req, res) => {
 // Crear assignatura
 router.post('/crear', async (req, res) => {
     const db = await getDatabase();
-    const { nom, descripcio, aula_id, actiu } = req.body;
+    const { nom, descripcio, aula_id, actiu, es_tutoria } = req.body;
 
     try {
-        runExec(db, 'INSERT INTO assignatures (nom, descripcio, aula_id, actiu) VALUES (?, ?, ?, ?)',
-            [nom, descripcio, aula_id, actiu ? 1 : 0]);
+        runExec(db, 'INSERT INTO assignatures (nom, descripcio, aula_id, actiu, es_tutoria) VALUES (?, ?, ?, ?, ?)',
+            [nom, descripcio, aula_id, actiu ? 1 : 0, es_tutoria ? 1 : 0]);
         res.redirect('/assignatures');
     } catch (error) {
         const aules = runQuery(db, 'SELECT * FROM aules ORDER BY any_curs DESC, codi_aula');
@@ -98,15 +98,15 @@ router.get('/:id/editar', async (req, res) => {
 // Modificar assignatura
 router.post('/:id/editar', async (req, res) => {
     const db = await getDatabase();
-    const { nom, descripcio, aula_id, actiu } = req.body;
+    const { nom, descripcio, aula_id, actiu, es_tutoria } = req.body;
 
     try {
-        runExec(db, 'UPDATE assignatures SET nom = ?, descripcio = ?, aula_id = ?, actiu = ? WHERE id = ?',
-            [nom, descripcio, aula_id, actiu ? 1 : 0, req.params.id]);
+        runExec(db, 'UPDATE assignatures SET nom = ?, descripcio = ?, aula_id = ?, actiu = ?, es_tutoria = ? WHERE id = ?',
+            [nom, descripcio, aula_id, actiu ? 1 : 0, es_tutoria ? 1 : 0, req.params.id]);
         res.redirect('/assignatures');
     } catch (error) {
         const aules = runQuery(db, 'SELECT * FROM aules ORDER BY any_curs DESC, codi_aula');
-        const assignatura = { id: req.params.id, nom, descripcio, aula_id, actiu: actiu ? 1 : 0 };
+        const assignatura = { id: req.params.id, nom, descripcio, aula_id, actiu: actiu ? 1 : 0, es_tutoria: es_tutoria ? 1 : 0 };
         res.render('assignatures/formulari', { title: 'Modificar Assignatura', assignatura, aules, error: error.message });
     }
 });
@@ -162,6 +162,61 @@ router.post('/:id/alumnes/baixa/:alumne_id', async (req, res) => {
     runExec(db, 'UPDATE alumne_assignatura SET actiu = 0 WHERE alumne_id = ? AND assignatura_id = ?',
         [req.params.alumne_id, req.params.id]);
     res.redirect('/assignatures/' + req.params.id + '/alumnes');
+});
+
+// Vista de tutoria (El meu grup)
+router.get('/:id/tutoria', async (req, res) => {
+    const db = await getDatabase();
+    const assignatures = runQuery(db, `
+        SELECT a.*, au.codi_aula, au.any_curs, au.nom_aula
+        FROM assignatures a
+        JOIN aules au ON a.aula_id = au.id
+        WHERE a.id = ?
+    `, [req.params.id]);
+
+    const assignatura = assignatures[0];
+
+    if (!assignatura) {
+        return res.status(404).render('errors/404', { title: 'No trobat' });
+    }
+
+    if (!assignatura.es_tutoria) {
+        return res.status(404).render('errors/404', { title: 'No és una assignatura de tutoria' });
+    }
+
+    const alumnes = runQuery(db, `
+        SELECT al.*
+        FROM alumnes al
+        JOIN alumne_assignatura aa ON al.id = aa.alumne_id
+        WHERE aa.assignatura_id = ? AND aa.actiu = 1
+        ORDER BY al.cognoms, al.nom
+    `, [req.params.id]);
+
+    // Seguiments actius i incidències de comportament per alumne (agregats)
+    const seguimentsPerAlumne = {};
+    runQuery(db, `SELECT alumne_id, COUNT(*) as count FROM seguiments WHERE estat != 'tancat' GROUP BY alumne_id`)
+        .forEach(r => { seguimentsPerAlumne[r.alumne_id] = r.count; });
+
+    const incidenciesPerAlumne = {};
+    runQuery(db, `SELECT alumne_id, COUNT(*) as count FROM comportament WHERE assignatura_id = ? GROUP BY alumne_id`, [req.params.id])
+        .forEach(r => { incidenciesPerAlumne[r.alumne_id] = r.count; });
+
+    const alumnesResum = alumnes.map(al => ({
+        ...al,
+        seguimentsActius: seguimentsPerAlumne[al.id] || 0,
+        incidencies: incidenciesPerAlumne[al.id] || 0
+    }));
+
+    const totalSeguimentsActius = alumnesResum.reduce((sum, al) => sum + al.seguimentsActius, 0);
+    const totalIncidencies = alumnesResum.reduce((sum, al) => sum + al.incidencies, 0);
+
+    res.render('assignatures/tutoria', {
+        title: 'Tutoria - ' + assignatura.nom,
+        assignatura,
+        alumnes: alumnesResum,
+        totalSeguimentsActius,
+        totalIncidencies
+    });
 });
 
 // Vista d'avaluació (llibre imprimit)

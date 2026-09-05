@@ -1,0 +1,121 @@
+<%- include('../header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="bi bi-clipboard2-pulse"></i> Seguiment #<%= seguiment.id %>
+    </h1>
+    <a href="/alumnes/<%= seguiment.alumne_id %>" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Tornar a la fitxa
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Alumne</dt>
+            <dd class="col-sm-9"><a href="/alumnes/<%= seguiment.alumne_id %>"><%= seguiment.cognoms %>, <%= seguiment.nom %></a></dd>
+
+            <dt class="col-sm-3">Tipus</dt>
+            <dd class="col-sm-9"><span class="badge bg-secondary"><%= tipusLabels[seguiment.tipus] || seguiment.tipus %></span></dd>
+
+            <dt class="col-sm-3">Responsable</dt>
+            <dd class="col-sm-9"><%= seguiment.responsable || '-' %></dd>
+
+            <dt class="col-sm-3">Motiu</dt>
+            <dd class="col-sm-9"><%= seguiment.motiu %></dd>
+
+            <dt class="col-sm-3">Obert</dt>
+            <dd class="col-sm-9"><%= seguiment.data_obertura %></dd>
+
+            <% if (seguiment.data_tancament) { %>
+            <dt class="col-sm-3">Tancat</dt>
+            <dd class="col-sm-9"><%= seguiment.data_tancament %></dd>
+            <% } %>
+
+            <dt class="col-sm-3">Estat</dt>
+            <dd class="col-sm-9">
+                <% const estatBadge = { obert: 'bg-warning text-dark', en_seguiment: 'bg-info', resolucio: 'bg-primary', tancat: 'bg-success' }; %>
+                <span class="badge <%= estatBadge[seguiment.estat] || 'bg-secondary' %> mb-2"><%= estatLabels[seguiment.estat] || seguiment.estat %></span>
+                <form action="/seguiments/<%= seguiment.id %>/estat" method="POST" class="d-flex gap-2 align-items-center">
+                    <select class="form-select form-select-sm w-auto" name="estat">
+                        <% Object.keys(estatLabels).forEach(key => { %>
+                        <option value="<%= key %>" <%= key === seguiment.estat ? 'selected' : '' %>><%= estatLabels[key] %></option>
+                        <% }) %>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Canviar estat</button>
+                </form>
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-list-check"></i> Actuacions</h5>
+    </div>
+    <div class="card-body">
+        <form action="/seguiments/<%= seguiment.id %>/accions" method="POST" class="row g-2 mb-3">
+            <div class="col-md-3">
+                <input type="date" class="form-control" name="data" value="<%= new Date().toISOString().split('T')[0] %>">
+            </div>
+            <div class="col-md-7">
+                <input type="text" class="form-control" name="descripcio" placeholder="Ex: entrevista amb l'alumne, reunió amb família..." required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-plus-circle"></i> Afegir
+                </button>
+            </div>
+        </form>
+
+        <% if (accions.length > 0) { %>
+        <ul class="list-group">
+            <% accions.forEach(accio => { %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong><%= accio.data %></strong> — <%= accio.descripcio %>
+                </div>
+                <form action="/seguiments/accions/<%= accio.id %>/toggle" method="POST">
+                    <button type="submit" class="btn btn-sm <%= accio.fet ? 'btn-success' : 'btn-outline-secondary' %>">
+                        <i class="bi bi-check-circle"></i> <%= accio.fet ? 'Fet' : 'Marcar com a fet' %>
+                    </button>
+                </form>
+            </li>
+            <% }) %>
+        </ul>
+        <% } else { %>
+        <p class="text-muted mb-0">Encara no hi ha cap actuació registrada.</p>
+        <% } %>
+    </div>
+</div>
+
+<% if (tutoriesRelacionades.length > 0) { %>
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Tutories individuals relacionades</h5>
+    </div>
+    <div class="card-body">
+        <ul class="list-group">
+            <% tutoriesRelacionades.forEach(t => { %>
+            <li class="list-group-item">
+                <strong><%= t.data %></strong> — <%= t.motiu || 'Sense motiu especificat' %>
+                <a href="/tutories/<%= t.id %>/editar" class="btn btn-sm btn-outline-primary float-end">Veure</a>
+            </li>
+            <% }) %>
+        </ul>
+    </div>
+</div>
+<% } %>
+
+<div class="d-flex gap-2">
+    <a href="/tutories/crear?alumne_id=<%= seguiment.alumne_id %>" class="btn btn-outline-primary">
+        <i class="bi bi-chat-dots"></i> Registrar Tutoria Individual
+    </a>
+    <form action="/seguiments/<%= seguiment.id %>/eliminar" method="POST" onsubmit="return confirm('Estàs segur que vols eliminar aquest seguiment?')">
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Eliminar Seguiment
+        </button>
+    </form>
+</div>
+
+<%- include('../footer') %>
