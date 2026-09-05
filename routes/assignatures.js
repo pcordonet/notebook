@@ -223,6 +223,7 @@ router.get('/:id/avaluacio', async (req, res) => {
             notesPerAlumne[n.alumne_id] = {};
         }
         notesPerAlumne[n.alumne_id][n.tipus_nota_id] = {
+            id: n.id,
             nota: n.nota,
             observacions: n.observacions
         };

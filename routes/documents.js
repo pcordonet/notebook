@@ -76,6 +76,13 @@ router.post('/pujar', upload.single('fitxer'), async (req, res) => {
     }
 });
 
+// API: Llistar documents d'una nota (AJAX)
+router.get('/by-nota/:nota_id', async (req, res) => {
+    const db = await getDatabase();
+    const documents = runQuery(db, 'SELECT id, nom_fitxer FROM documents WHERE nota_id = ? ORDER BY data_pujada DESC', [req.params.nota_id]);
+    res.json(documents);
+});
+
 // Descarregar document
 router.get('/:id', async (req, res) => {
     const db = await getDatabase();
@@ -142,6 +149,28 @@ router.post('/:id/eliminar', async (req, res) => {
         res.redirect('/assignatures/' + doc.assignatura_id);
     } else {
         res.redirect('/documents');
+    }
+});
+
+// API: Eliminar document (AJAX)
+router.post('/:id/eliminar-ajax', async (req, res) => {
+    const db = await getDatabase();
+    const documents = runQuery(db, 'SELECT * FROM documents WHERE id = ?', [req.params.id]);
+    const doc = documents[0];
+
+    if (!doc) {
+        return res.status(404).json({ success: false, error: 'Document no trobat' });
+    }
+
+    try {
+        const filePath = path.join(__dirname, '..', 'uploads', doc.ruta_fitxer);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+        runExec(db, 'DELETE FROM documents WHERE id = ?', [req.params.id]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

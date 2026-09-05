@@ -15,7 +15,7 @@
 
         <div class="card">
             <div class="card-body">
-                <form action="<%= nota && nota.id ? '/notes/' + nota.id + '/editar' : '/notes/crear' %>" method="POST">
+                <form action="<%= nota && nota.id ? '/notes/' + nota.id + '/editar' : '/notes/crear' %>" method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="alumne_id" class="form-label">Alumne *</label>
                         <select class="form-select" id="alumne_id" name="alumne_id" required>
@@ -67,6 +67,47 @@
                         <label for="observacions" class="form-label">Observacions</label>
                         <textarea class="form-control" id="observacions" name="observacions" rows="3"><%= nota ? nota.observacions : '' %></textarea>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="fitxers" class="form-label">Adjuntar documents</label>
+                                <input type="file" class="form-control" id="fitxers" name="fitxers" multiple
+                                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
+                                <div class="form-text">JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (màx. 10MB per fitxer).</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="foto" class="form-label">
+                                    <i class="bi bi-camera"></i> Fer una foto (mòbil)
+                                </label>
+                                <input type="file" class="form-control" id="foto" name="fitxers"
+                                       accept="image/*" capture="environment">
+                                <div class="form-text">Obre la càmera nativa del mòbil/tauleta.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label d-block">&nbsp;</label>
+                                <button type="button" class="btn btn-outline-secondary w-100" onclick="openCameraCapture('fitxers')">
+                                    <i class="bi bi-camera-video"></i> Obrir càmera (PC)
+                                </button>
+                                <div class="form-text">Fes servir la webcam de l'ordinador sense sortir de la pàgina.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <% if (nota && nota.id) { %>
+                    <div class="form-text mb-3">Es poden afegir diversos fitxers/fotos; s'afegiran als ja existents.</div>
+                    <% } %>
+
+                    <% if (nota && nota.id) { %>
+                    <div class="mb-3">
+                        <a href="/notes/<%= nota.id %>" class="link-secondary small">
+                            <i class="bi bi-file-earmark"></i> Veure documents ja adjuntats
+                        </a>
+                    </div>
+                    <% } %>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDatabase } = require('../db/database');
+const upload = require('../middleware/upload');
 
 // Helper per executar queries
 function runQuery(db, sql, params = []) {
@@ -16,6 +17,16 @@ function runQuery(db, sql, params = []) {
 
 function runExec(db, sql, params = []) {
     db.run(sql, params);
+}
+
+// Desar els documents pujats juntament amb una nota
+function desarDocumentsNota(db, files, { nota_id, alumne_id, assignatura_id }) {
+    files.forEach(file => {
+        runExec(db, `
+            INSERT INTO documents (nota_id, alumne_id, assignatura_id, nom_fitxer, ruta_fitxer, tipus_mime, mida_bytes)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [nota_id || null, alumne_id || null, assignatura_id || null, file.originalname, 'documents/' + file.filename, file.mimetype, file.size]);
+    });
 }
 
 // Llistat de notes
@@ -54,13 +65,24 @@ router.get('/tipus_nota/:assignatura_id', async (req, res) => {
 });
 
 // Crear nota
-router.post('/crear', async (req, res) => {
+router.post('/crear', upload.array('fitxers'), async (req, res) => {
     const db = await getDatabase();
     const { alumne_id, tipus_nota_id, nota, data, observacions } = req.body;
 
     try {
         runExec(db, 'INSERT INTO notes (alumne_id, tipus_nota_id, nota, data, observacions) VALUES (?, ?, ?, ?, ?)',
             [alumne_id, tipus_nota_id, nota, data || new Date().toISOString().split('T')[0], observacions || null]);
+
+        if (req.files && req.files.length > 0) {
+            const notaIdResult = runQuery(db, 'SELECT last_insert_rowid() as id');
+            const tipusNotaResult = runQuery(db, 'SELECT assignatura_id FROM tipus_nota WHERE id = ?', [tipus_nota_id]);
+            desarDocumentsNota(db, req.files, {
+                nota_id: notaIdResult[0].id,
+                alumne_id,
+                assignatura_id: tipusNotaResult[0]?.assignatura_id
+            });
+        }
+
         res.redirect('/notes');
     } catch (error) {
         const alumnes = runQuery(db, 'SELECT * FROM alumnes ORDER BY cognoms, nom');
@@ -116,13 +138,23 @@ router.get('/:id/editar', async (req, res) => {
 });
 
 // Modificar nota
-router.post('/:id/editar', async (req, res) => {
+router.post('/:id/editar', upload.array('fitxers'), async (req, res) => {
     const db = await getDatabase();
     const { alumne_id, tipus_nota_id, nota, data, observacions } = req.body;
 
     try {
         runExec(db, 'UPDATE notes SET alumne_id = ?, tipus_nota_id = ?, nota = ?, data = ?, observacions = ? WHERE id = ?',
             [alumne_id, tipus_nota_id, nota, data, observacions || null, req.params.id]);
+
+        if (req.files && req.files.length > 0) {
+            const tipusNotaResult = runQuery(db, 'SELECT assignatura_id FROM tipus_nota WHERE id = ?', [tipus_nota_id]);
+            desarDocumentsNota(db, req.files, {
+                nota_id: req.params.id,
+                alumne_id,
+                assignatura_id: tipusNotaResult[0]?.assignatura_id
+            });
+        }
+
         res.redirect('/notes/' + req.params.id);
     } catch (error) {
         const alumnes = runQuery(db, 'SELECT * FROM alumnes ORDER BY cognoms, nom');
@@ -155,6 +187,8 @@ router.post('/api/update', async (req, res) => {
             'SELECT id FROM notes WHERE alumne_id = ? AND tipus_nota_id = ?',
             [alumne_id, tipus_nota_id]);
 
+        let notaId = null;
+
         if (nota === null || nota === undefined) {
             // Eliminar nota
             if (existing.length > 0) {
@@ -164,13 +198,16 @@ router.post('/api/update', async (req, res) => {
             // Actualitzar nota existent
             runExec(db, 'UPDATE notes SET nota = ?, tipus = ?, data = ?, observacions = ? WHERE id = ?',
                 [nota, tipus, new Date().toISOString().split('T')[0], observacions || null, existing[0].id]);
+            notaId = existing[0].id;
         } else {
             // Crear nova nota
             runExec(db, 'INSERT INTO notes (alumne_id, tipus_nota_id, nota, tipus, data, observacions) VALUES (?, ?, ?, ?, ?, ?)',
                 [alumne_id, tipus_nota_id, nota, tipus, new Date().toISOString().split('T')[0], observacions || null]);
+            const idResult = runQuery(db, 'SELECT last_insert_rowid() as id');
+            notaId = idResult[0].id;
         }
 
-        res.json({ success: true });
+        res.json({ success: true, nota_id: notaId });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

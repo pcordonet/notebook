@@ -253,7 +253,7 @@
                     <% if (tipusNotaPerTrimestre[t] && tipusNotaPerTrimestre[t].length > 0) { %>
                         <% tipusNotaPerTrimestre[t].forEach(function(tn) { %>
                             <td class="gradebook-grade grade-cell"
-                                onclick="openGradeModal('<%= alumnes[i].id %>', '<%= tn.id %>', '<%= alumnes[i].cognoms %>, <%= alumnes[i].nom %>', '<%= tn.nom %>', '<%= notesPerAlumne[alumnes[i].id]?.[tn.id]?.nota || '' %>', '<%= (notesPerAlumne[alumnes[i].id]?.[tn.id]?.observacions || "").replace(/'/g, "\\'") %>')">
+                                onclick="openGradeModal('<%= alumnes[i].id %>', '<%= tn.id %>', '<%= alumnes[i].cognoms %>, <%= alumnes[i].nom %>', '<%= tn.nom %>', '<%= notesPerAlumne[alumnes[i].id]?.[tn.id]?.nota || '' %>', '<%= (notesPerAlumne[alumnes[i].id]?.[tn.id]?.observacions || "").replace(/'/g, "\\'") %>', '<%= notesPerAlumne[alumnes[i].id]?.[tn.id]?.id || '' %>')">
                                 <% if (notesPerAlumne[alumnes[i].id] && notesPerAlumne[alumnes[i].id][tn.id]) { %>
                                     <% const notaData = notesPerAlumne[alumnes[i].id][tn.id]; %>
                                     <span class="grade-value" style="<%= notaData.observacions ? 'background-color: #fff3cd; padding: 2px 4px; border-radius: 3px;' : '' %>"><%= notaData.nota.toFixed(1) %></span>
@@ -344,6 +344,29 @@
                 <div class="mb-3">
                     <label for="modal-observacions" class="form-label">Observacions</label>
                     <textarea class="form-control" id="modal-observacions" rows="2" placeholder="Observacions de la nota..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Documents adjunts</label>
+                    <div id="modal-grade-docs" class="mb-2"><span class="text-muted small">Cap document.</span></div>
+                    <div class="row g-2">
+                        <div class="col-sm-4">
+                            <input type="file" class="form-control" id="modal-grade-fitxers" multiple
+                                   accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
+                            <div class="form-text">Adjuntar fitxer(s)</div>
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="file" class="form-control" id="modal-grade-foto"
+                                   accept="image/*" capture="environment">
+                            <div class="form-text"><i class="bi bi-camera"></i> Foto (mòbil)</div>
+                        </div>
+                        <div class="col-sm-4">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="openCameraCapture('modal-grade-fitxers')">
+                                <i class="bi bi-camera-video"></i> Càmera (PC)
+                            </button>
+                            <div class="form-text">Webcam de l'ordinador</div>
+                        </div>
+                    </div>
+                    <div class="form-text">Es pujaran en desar. JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (màx. 10MB).</div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -500,19 +523,25 @@
 <script>
 let currentAlumneId = null;
 let currentTipusNotaId = null;
+let currentNotaId = null;
 
-function openGradeModal(alumneId, tipusNotaId, alumneNom, tipusNom, currentGrade, currentObs) {
+function openGradeModal(alumneId, tipusNotaId, alumneNom, tipusNom, currentGrade, currentObs, notaId) {
     currentAlumneId = alumneId;
     currentTipusNotaId = tipusNotaId;
-    
+    currentNotaId = notaId || null;
+
     document.getElementById('modal-alumne').textContent = alumneNom;
     document.getElementById('modal-tipus').textContent = tipusNom;
     document.getElementById('modal-nota').value = currentGrade || '';
     document.getElementById('modal-observacions').value = currentObs || '';
-    
+    document.getElementById('modal-grade-fitxers').value = '';
+    document.getElementById('modal-grade-foto').value = '';
+
+    loadGradeDocuments();
+
     const modal = new bootstrap.Modal(document.getElementById('gradeModal'));
     modal.show();
-    
+
     // Focus on input
     setTimeout(() => {
         document.getElementById('modal-nota').focus();
@@ -520,15 +549,71 @@ function openGradeModal(alumneId, tipusNotaId, alumneNom, tipusNom, currentGrade
     }, 300);
 }
 
+function loadGradeDocuments() {
+    const container = document.getElementById('modal-grade-docs');
+
+    if (!currentNotaId) {
+        container.innerHTML = '<span class="text-muted small">Encara no hi ha cap document (desa la nota primer).</span>';
+        return;
+    }
+
+    container.innerHTML = '<span class="text-muted small">Carregant...</span>';
+
+    fetch('/documents/by-nota/' + currentNotaId)
+        .then(response => response.json())
+        .then(docs => {
+            if (docs.length === 0) {
+                container.innerHTML = '<span class="text-muted small">Cap document.</span>';
+                return;
+            }
+            let html = '<ul class="list-group">';
+            docs.forEach(doc => {
+                html += '<li class="list-group-item d-flex justify-content-between align-items-center p-2">' +
+                    '<a href="/documents/' + doc.id + '/veure" target="_blank" class="text-truncate">' +
+                    '<i class="bi bi-file-earmark"></i> ' + doc.nom_fitxer + '</a>' +
+                    '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteGradeDocument(' + doc.id + ')">' +
+                    '<i class="bi bi-trash"></i></button></li>';
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        })
+        .catch(() => {
+            container.innerHTML = '<span class="text-danger small">Error carregant els documents.</span>';
+        });
+}
+
+function deleteGradeDocument(docId) {
+    if (!confirm('Estàs segur que vols eliminar aquest document?')) {
+        return;
+    }
+
+    fetch('/documents/' + docId + '/eliminar-ajax', { method: 'POST' })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadGradeDocuments();
+            } else {
+                alert('Error: ' + result.error);
+            }
+        })
+        .catch(error => {
+            alert('Error de connexió: ' + error);
+        });
+}
+
 function saveGrade() {
     const nota = document.getElementById('modal-nota').value;
     const observacions = document.getElementById('modal-observacions').value;
-    
+    const fitxers = [
+        ...document.getElementById('modal-grade-fitxers').files,
+        ...document.getElementById('modal-grade-foto').files
+    ];
+
     if (nota === '' || isNaN(nota) || nota < 0 || nota > 10) {
         alert('Si us plau, introdueix una nota vàlida (0-10)');
         return;
     }
-    
+
     fetch('/notes/api/update', {
         method: 'POST',
         headers: {
@@ -543,11 +628,29 @@ function saveGrade() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
+        if (!data.success) {
             alert('Error al guardar la nota: ' + data.error);
+            return;
         }
+
+        if (fitxers.length === 0) {
+            location.reload();
+            return;
+        }
+
+        // Pujar cada fitxer seleccionat vinculat a la nota que acabem de desar
+        const pujades = Array.from(fitxers).map(file => {
+            const formData = new FormData();
+            formData.append('fitxer', file);
+            formData.append('nota_id', data.nota_id);
+            formData.append('alumne_id', currentAlumneId);
+            formData.append('assignatura_id', '<%= assignatura.id %>');
+            return fetch('/documents/pujar', { method: 'POST', body: formData });
+        });
+
+        Promise.all(pujades)
+            .then(() => location.reload())
+            .catch(error => alert('Error pujant els documents: ' + error));
     })
     .catch(error => {
         alert('Error de connexió: ' + error);
